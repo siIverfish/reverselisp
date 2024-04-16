@@ -10,8 +10,10 @@ macro_rules! result_of {
     }
 }
 
-result_of! { one_plus_one, "1 + 1"             => Data(Int(2))  }
-result_of! { plus_one_one, "+ 1 1"             => Data(Int(2))  }
-result_of! { one_one_plus, "1 1 +"             => Data(Int(2))  }
-result_of! { many_add,     "5 8 1 0 + + +"     => Data(Int(14)) }
-result_of! { paren_add,    "(1 + 1) (6 + 2) +" => Data(Int(10)) }
+result_of! { one_plus_one,    "1 + 1"             => Data(Int(2))  }
+result_of! { plus_one_one,    "+ 1 1"             => Data(Int(2))  }
+result_of! { one_one_plus,    "1 1 +"             => Data(Int(2))  }
+result_of! { many_add,        "5 8 1 0 + + +"     => Data(Int(14)) }
+result_of! { paren_add,       "(1 + 1) (6 + 2) +" => Data(Int(10)) }
+result_of! { composing_add,   "+ + + 5 2 0 1"     => Data(Int(8))  }
+result_of! { composing_parens,"(+ + +) 5 2 1 9"   => Data(Int(17)) }
