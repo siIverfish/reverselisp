@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
-use crate::default_types::*;
 use crate::scanner::Lexeme;
+use crate::{Token, Token::*, AbstractItem::*, FunctionItem::*};
 
 #[derive(Debug)]
 pub struct Builtins(HashMap<Lexeme, Token>);
@@ -9,15 +9,11 @@ pub struct Builtins(HashMap<Lexeme, Token>);
 static BUILTINS: OnceLock<Builtins> = OnceLock::new();
 
 impl Builtins {
-    pub fn init() {
-        BUILTINS.set(Builtins::default()).expect("Global builtins object already set!");
-    }
-    
     pub fn global() -> &'static Self {
-        BUILTINS.get().expect("Global builtins object was not initialized!")
+        BUILTINS.get_or_init(Builtins::default)
     }
     
-    pub fn filter(arg: Lexeme) -> Lexeme {
+    pub fn from_lexeme(arg: Lexeme) -> Lexeme {
         Self::global().0
             .get(&arg)
             .cloned()

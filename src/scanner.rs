@@ -1,6 +1,6 @@
-use crate::default_types::*;
-use crate::error::ScanError::*;
-
+use {crate::Token::*, crate::DataItem::*, crate::AbstractItem::*};
+use crate::error::ScanError;
+use Lexeme::*;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum Lexeme {
@@ -9,9 +9,6 @@ pub enum Lexeme {
     End,
     Whitespace,
 }
-use Lexeme::*;
-use crate::builtins::Builtins;
-use crate::error::ScanError;
 
 const SPECIAL_CHARACTERS: &str = "() \n\t";
 
@@ -21,6 +18,7 @@ pub struct Scanner<'input> {
 }
 
 impl<'input> Scanner<'input> {
+    // simple but slow implementation
     pub fn peek(&self) -> Option<char> {
         self.input.chars().nth(self.index)
     }
@@ -37,7 +35,7 @@ impl<'input> Scanner<'input> {
 
     pub fn scan(self) -> Result<Vec<Lexeme>, ScanError> {
         self.into_iter()
-            .map(|r| r.map(Builtins::filter))
+            .map(|r| r.map(crate::builtins::Builtins::from_lexeme))
             .filter(|lexeme| ! matches!(lexeme, &Ok(Whitespace)))
             .collect()
     }

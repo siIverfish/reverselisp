@@ -1,11 +1,16 @@
 #![feature(box_patterns)]
 #![feature(let_chains)]
 
+use {Token::*, FunctionItem::*, DataItem::*, AbstractItem::*};
+use crate::parser::parse;
+use crate::scanner::Scanner;
+use crate::error::{EvalError, EvalError::*};
+
 structstruck::strike! {
     #[strikethrough[derive(Debug, Hash, PartialEq, Eq, Clone)]]
     pub enum Token {
         /// There are three types of values:
-        /// Data, which represents a conventional, concrete datum like 4.0 or "hi!".
+        /// Data, which represent a conventional, concrete datum like 4 or "hi!".
         /// Function, something that acts on data.
         /// Abstract, an entity that will, when prompted, resolve itself into a value.
         Data(enum DataItem {
@@ -28,37 +33,12 @@ structstruck::strike! {
     }
 }
 
-// python would kill me for these imports
-mod default_types { 
-    pub use super::*;
-    pub use {Token::*, FunctionItem::*, DataItem::*, AbstractItem::*}; 
-    pub use EvalError::*;
-}
-
-use default_types::*;
-
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum EvalError {
-    #[error("Token {0:?} could not be coerced into the wanted type.")]
-    NotAValue(Token),
-    #[error("meta fragment {0:?} cannot be called.")]
-    MetaFragment(AbstractItem),
-    #[error("Type mismatch: `{s:?}` is not `{t}`")]
-    TypeMismatch { s: Token, t: &'static str},
-    #[error("Runtime error: {0})")]
-    RuntimeError(String),
-    #[error("not an application: '{0:?}'")]
-    EvaluateFunctionError(Token),
-    #[error("Token {token:?} could not be coerced into {wrong_type:?}")]
-    WrongType { token: DataItem, wrong_type: String },
-    #[error("ident {0} unknown")]
-    CouldNotResolve(String),
-    #[error("Could not get value from non-abstract token {0:?}")]
-    CouldNotGet(Token),
-    #[error("could not destructure token {0:?}")]
-    CouldNotDestructure(Token),
+pub fn run(input: &str) -> Result<Token, error::Error> {
+    let scanner = Scanner { index: 0, input };
+    let lexemes = scanner.scan()?;
+    let tree = parse(&mut lexemes.into_iter())?;
+    let result = tree.get()?;
+    Ok(result)
 }
 
 impl FunctionItem {

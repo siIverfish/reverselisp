@@ -1,44 +1,29 @@
-use lisp::scanner::Scanner;
-use lisp::parser::parse;
+#![allow(dead_code)]
 
-type Error = Result<(), Box<dyn std::error::Error>>;
+use lisp::run;
+use lisp::error::{Error, ScanError};
 
 static INPUT: &str = "1 + 1";
- 
-fn main() -> Error { repl() }
 
-fn program() -> Error {
-    println!("main() running...");
-    
-    lisp::builtins::Builtins::init();
-    run(INPUT)
-}
+fn main() -> Result<(), Error> { repl() }
 
-fn run(input: &str) -> Error {
-    let scanner = Scanner { index: 0, input };
-
-    let lexemes = scanner.scan()?;
-    // dbg!(&lexemes);
-
-    let tree = parse(&mut lexemes.into_iter())?;
-    dbg!(&tree);
-
-    let result = tree.get()?;
-    dbg!(result);
-    
+fn program() -> Result<(), Error> {
+    let result = run(INPUT)?;
+    dbg!(&result);
     Ok(())
 }
 
-fn repl() -> Error {
-    lisp::builtins::Builtins::init();
+fn repl() -> Result<(), Error> {
     loop { repl_once()? }
 }
 
-fn repl_once() -> Error {
+fn repl_once() -> Result<(), Error> {
     use std::io::stdin;
     let mut input = String::new();
-    stdin().read_line(&mut input)?;
+    stdin().read_line(&mut input).map_err(ScanError::from)?;
     let input = input.trim();
     
-    run(input)
+    let result = run(input)?;
+    dbg!(&result);
+    Ok(())
 }
