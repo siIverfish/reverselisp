@@ -107,14 +107,6 @@ impl AbstractItem {
     }
 }
 
-// pub fn destructure(token: Token) -> Result<(Token, Token), EvalError> {
-//     if let Abstract(Applied(box AppliedItem { f, to })) = token {
-//         Ok((f, to))
-//     } else {
-//         Err(CouldNotDestructure(token))
-//     }
-// }
-
 pub mod scanner;
 pub mod error;
 pub mod builtins;
