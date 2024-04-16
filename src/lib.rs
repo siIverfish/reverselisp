@@ -62,7 +62,7 @@ impl FunctionItem {
 impl Token {
     pub fn eval(self, arg: Token) -> Result<Token, EvalError> {
         match (self, arg) {
-            (f,               Function(Composed(box (g, c)))) => f.eval(g.eval(c)?),
+            (Function(Composed(box (f, g))),     arg) => f.eval(g.eval(arg)?),
             (a,               Data(Args(box (b, c)))) => a.eval(b)?.eval(c),
             // Otherwise, data continue referring to each other in an infinite loop
             // until the interpreter stack-overflows :3
