@@ -18,12 +18,12 @@ fn repl() -> Result<(), Error> {
 }
 
 fn repl_once() -> Result<(), Error> {
-    use std::io::stdin;
     let mut input = String::new();
-    stdin().read_line(&mut input).map_err(ScanError::from)?;
-    let input = input.trim();
+    std::io::stdin()
+        .read_line(&mut input)
+        .map_err(ScanError::from)?;
     
-    let result = run(input)?;
+    let result = run(&input)?;
     dbg!(&result);
     Ok(())
 }

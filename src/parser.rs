@@ -32,5 +32,3 @@ pub fn parse(lexemes: &mut impl Iterator<Item = Lexeme>) -> Result<Token, ParseE
         }
     }
 }
-
-// pub fn parse(lexemes: &mut impl Iterator<Item = Lexeme>) -> Result<Token, ParseError>

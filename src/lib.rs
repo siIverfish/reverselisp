@@ -22,6 +22,7 @@ structstruck::strike! {
             Add(Box<Token>),
             Adder,
             Evaluate,
+            Composed(Box<(Token, Token)>),
         }),
         Abstract(enum AbstractItem {
             Ident(String),
@@ -50,23 +51,28 @@ impl FunctionItem {
                 (a, b) => Err(RuntimeError(format!("Could not add '{a:?}' to '{b:?}'")))
             }
             Evaluate => arg.get(),
+            // Composed functions are handled in higher-level code (`Token::eval`).
+            // If functions are split into high-level & composable functions, that 
+            // would be a great place to re-home that snippet.
+            Composed(_) => unreachable!(),
         }
     }
 }
 
 impl Token {
     pub fn eval(self, arg: Token) -> Result<Token, EvalError> {
-        if let Data(Args(box (first, second))) = arg {
-            self.eval(first)?.eval(second)
-        } else {
-            match self {
-                data @ Data(_) => match arg {
-                    more_data @ Data(_) => Ok(Data(Args(Box::new((data, more_data))))),
-                    other => other.eval(data),
-                },
-                Function(f) => f.eval(arg),
-                Abstract(m) => m.get()?.eval(arg),
-            }
+        match (self, arg) {
+            (f,               Function(Composed(box (g, c)))) => f.eval(g.eval(c)?),
+            (a,               Data(Args(box (b, c)))) => a.eval(b)?.eval(c),
+            // Otherwise, data continue referring to each other in an infinite loop
+            // until the interpreter stack-overflows :3
+            (a @ Data(_),     b @ Data(_)           ) => Ok(Data(Args(Box::new((a, b))))),
+            // Automatically composing functions in this way prevents the creation of higher-order functions.
+            // This issue must eventually be reconciled, possibly by splitting functions into two types.
+            (f @ Function(_), g @ Function(_)       ) => Ok(Function(Composed(Box::new((f, g))))),
+            (a @ Data(_),     b                     ) => b.eval(a),
+            (Function(f),     arg                   ) => f.eval(arg),
+            (Abstract(expr),  arg                   ) => expr.get()?.eval(arg),
         }
     }
     
